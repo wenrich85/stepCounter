@@ -46,25 +46,92 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+// Class 3
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+
+const val CHANNEL_ID = "fitness_alerts"
+const val HEART_RATE_NOTIFICATION_ID = 1
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel(this)
         setContent {
             StepCounterTheme {
                 WearFitnessApp()
             }
         }
     }
+
+    private fun createNotificationChannel(context: Context){
+        val channel = NotificationChannel(
+            CHANNEL_ID, "Fitness Alerts", NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "heart-rate and activity reminders"
+        }
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
+    }
 }
 
 @Composable
 fun WearFitnessApp(){
+    val context = LocalContext.current
+
     val navController = rememberNavController()
     var steps by remember { mutableIntStateOf(30)}
     var calories by remember { mutableIntStateOf(25) }
     var stepsGoal by remember { mutableIntStateOf(10000)}
     var caloriesGoal by remember { mutableIntStateOf(500) }
+    var heartRate by remember { mutableIntStateOf(72) }
+    var heartRateNotificationSent by remember { mutableStateOf(false) }
+
+    var notifcationPermissionGranted by remember { mutableStateOf(
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    ) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        notifcationPermissionGranted = isGranted
+    }
+
+    LaunchedEffect(Unit) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notifcationPermissionGranted){
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    LaunchedEffect(heartRate, notifcationPermissionGranted) {
+        if (heartRate >= 100 && !heartRateNotificationSent && notifcationPermissionGranted){
+            showNotification(
+                context = context,
+                notificationId = HEART_RATE_NOTIFICATION_ID,
+                title = "High Heart Rate Detected!",
+                message = "Your heartrate has reached $heartRate BPM"
+            )
+        }
+        heartRateNotificationSent = true
+        if (heartRate < 100) {
+            heartRateNotificationSent = false
+            }
+
+    }
+
 
     SwipeNavigationContainer(navController = navController) {
         NavHost(
@@ -82,7 +149,11 @@ fun WearFitnessApp(){
             }
 
             composable("heart"){
-                HeartRateScreen()
+                HeartRateScreen(
+                heartRate = heartRate,
+                onDecreaseHeartRate = { heartRate-- },
+                onIncreaseHeartRate = { heartRate++ }
+                )
             }
 
             composable( "goals" ){
@@ -90,7 +161,7 @@ fun WearFitnessApp(){
                     stepsGoal = stepsGoal,
                     caloriesGoal = caloriesGoal,
                     onDecreaseStepsGoal = { stepsGoal -= 500 },
-                    onIncreaseStepsGoal = { stepsGoal + 500},
+                    onIncreaseStepsGoal = { stepsGoal += 500},
                     onDecreaseCaloriesGoal = { caloriesGoal -= 50},
                     onIncreaseCaloriesGoal = {caloriesGoal += 50}
 
@@ -185,7 +256,12 @@ fun DailyProgressScreen(
 }
 
 @Composable
-fun HeartRateScreen(){
+fun HeartRateScreen(
+    heartRate: Int,
+    onDecreaseHeartRate: () -> Unit,
+    onIncreaseHeartRate: () -> Unit
+    )
+{
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
@@ -193,7 +269,7 @@ fun HeartRateScreen(){
     ){
         Text(text = "Heart Rate", color = Color.White, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "72 BPM", color = Color.White, style = MaterialTheme.typography.displaySmall)
+        Text(text = "$heartRate BPM", color = Color.White, style = MaterialTheme.typography.displaySmall)
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "<- ->", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
 
@@ -251,6 +327,28 @@ fun ModifyGoalScreen(
     }
 }
 
+fun showNotification(
+    context: Context,
+    notificationId: Int,
+    title: String,
+    message: String
+){
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+    ){
+        return
+    }
+
+    val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setSmallIcon(android.R.drawable.ic_dialog_info)
+        .setContentTitle(title)
+        .setContentText(message)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setAutoCancel(true)
+        .build()
+
+    NotificationManagerCompat.from(context).notify(notificationId, notification)
+}
 
 
 @Composable
