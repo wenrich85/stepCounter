@@ -42,19 +42,24 @@ import androidx.wear.compose.material3.Text
 @Composable
 fun WearFitnessApp(
 heartRateSensorValue: Int,
-hasHeartRateSensor: Boolean
+hasHeartRateSensor: Boolean,
+stepsGoalFromPhone: Int
 ){
     val context = LocalContext.current
 
     val navController = rememberNavController()
     var steps by remember { mutableIntStateOf(30)}
     var calories by remember { mutableIntStateOf(25) }
-    var stepsGoal by remember { mutableIntStateOf(10000)}
+
     var caloriesGoal by remember { mutableIntStateOf(500) }
 
     var manuelHeartRate by remember { mutableIntStateOf(72) }
     val displayedHeartRate = if (hasHeartRateSensor) heartRateSensorValue else manuelHeartRate
 
+    var displayedStepsGoal by remember { mutableIntStateOf( stepsGoalFromPhone) }
+    LaunchedEffect(stepsGoalFromPhone) {
+        displayedStepsGoal = stepsGoalFromPhone
+    }
     var heartRateNotificationSent by remember { mutableStateOf(false) }
 
     var heartRateNotification by remember {mutableIntStateOf(72)}
@@ -82,7 +87,7 @@ hasHeartRateSensor: Boolean
                 context = context,
                 notificationId = HEART_RATE_NOTIFICATION_ID,
                 title = "High Heart Rate Detected!",
-                message = "Your heartrate has reached $displayedHeartRate BPM"
+                message = "Your heart rate has reached $displayedHeartRate BPM"
             )
         }
         heartRateNotificationSent = true
@@ -102,7 +107,7 @@ hasHeartRateSensor: Boolean
                 DailyProgressScreen(
                     steps = steps,
                     calories = calories,
-                    stepsGoal = stepsGoal,
+                    stepsGoal = displayedStepsGoal,
                     caloriesGoal = caloriesGoal,
                     onAddStep = { steps++; calories++ }
                 )
@@ -119,10 +124,10 @@ hasHeartRateSensor: Boolean
 
             composable( "goals" ){
                 ModifyGoalScreen(
-                    stepsGoal = stepsGoal,
+                    stepsGoal = displayedStepsGoal,
                     caloriesGoal = caloriesGoal,
-                    onDecreaseStepsGoal = { stepsGoal -= 500 },
-                    onIncreaseStepsGoal = { stepsGoal += 500},
+                    onDecreaseStepsGoal = { displayedStepsGoal -= 500 },
+                    onIncreaseStepsGoal = { displayedStepsGoal += 500},
                     onDecreaseCaloriesGoal = { caloriesGoal -= 50},
                     onIncreaseCaloriesGoal = {caloriesGoal += 50}
 

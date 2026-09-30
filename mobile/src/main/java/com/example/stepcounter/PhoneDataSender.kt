@@ -1,4 +1,4 @@
-package edu.sdgku.stepcounter
+package com.example.stepcounter
 
 import android.content.Context
 import com.google.android.gms.wearable.PutDataMapRequest
