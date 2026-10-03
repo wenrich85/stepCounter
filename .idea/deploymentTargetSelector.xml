@@ -8,7 +8,7 @@
       </SelectionState>
       <SelectionState runConfigName="wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-09-29T01:52:50.234224Z">
+        <DropdownSelection timestamp="2026-10-03T19:57:46.534914Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/wrich/.android/avd/Wear_OS_XL_Round.avd" />
@@ -19,7 +19,7 @@
       </SelectionState>
       <SelectionState runConfigName="mobile">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-09-29T01:44:17.991999Z">
+        <DropdownSelection timestamp="2026-10-01T02:43:48.945203Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/wrich/.android/avd/Pixel_8.avd" />

@@ -292,7 +292,7 @@ fun ModifyGoalScreen(
         ){
             Button(onClick = onDecreaseCaloriesGoal) {Text("-") }
             Spacer (modifier = Modifier.width(6.dp))
-            Text(text = stepsGoal.toString(), color = Color.White)
+            Text(text = caloriesGoal.toString(), color = Color.White)
             Spacer (modifier = Modifier.width(6.dp))
             Button(onClick = onIncreaseCaloriesGoal) {Text("+") }
         }
