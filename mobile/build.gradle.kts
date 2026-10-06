@@ -54,4 +54,5 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.16.0"))
     implementation("com.google.firebase:firebase-firestore")
     implementation(project(":shared"))
+    implementation("androidx.compose.material3:material3-window-size-class")
 }

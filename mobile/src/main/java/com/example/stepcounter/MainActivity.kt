@@ -27,20 +27,27 @@ import androidx.compose.ui.unit.dp
 import android.util.Log
 import androidx.compose.runtime.DisposableEffect
 import com.example.stepcounter.shared.`data`.FirebaseRepository
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import  com.example.mobile.ui.dashboard.PhoneCompanionApp
+
+
+
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val repository = FirebaseRepository()
-
         repository.updateDailyGoal(
             dailyGoal = 55555,
             onSuccess = { Log.d("SharedFirebase", "Goal updated from mobile")},
             onError = { Log.d("SharedFirebase", "Could not update goal")}
         )
         setContent {
+            val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
             MaterialTheme{
-                PhoneCompanionApp(repository = repository)
+                PhoneCompanionApp(repository = repository, widthSizeClass = widthSizeClass)
             }
         }
     }
@@ -136,7 +143,7 @@ fun PhoneCompanionApp(
                     sendStatus = "Saved $stepsGoal in Firebase"
                 },
                 onError = {exception ->
-                    sendStatus = "Firebase error: " + (exception.message ?: "Unknown Errot")
+                    sendStatus = "Firebase error: " + (exception.message ?: "Unknown Error")
 
                 }
 
