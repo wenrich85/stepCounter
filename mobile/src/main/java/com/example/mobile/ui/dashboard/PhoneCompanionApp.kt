@@ -8,9 +8,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.stepcounter.sendStepsGoalToWatch
 import com.example.stepcounter.shared.data.FirebaseRepository
+import com.example.stepcounter.shared.model.FitnessData
 
 @Composable
 fun PhoneCompanionApp(
@@ -20,10 +22,12 @@ fun PhoneCompanionApp(
     val context = LocalContext.current
     var stepsGoal by remember { mutableIntStateOf(10000) }
     var sendStatus by remember { mutableStateOf("Not Sent") }
+    var cloudData by remember { mutableStateOf<FitnessData?>(null) }
 
     DisposableEffect(repository) {
         val listenerRegistration = repository.listenToFitnessData(
             onDataChanged = { fitnessData ->
+                cloudData = fitnessData
                 stepsGoal = fitnessData.dailyGoal.toInt()
                 sendStatus = "Goal received from Firebase: $stepsGoal"
             },
@@ -42,6 +46,11 @@ fun PhoneCompanionApp(
 
     val onIncrease = {
         stepsGoal += 500
+    }
+
+    val onGoalDropped: (Int) -> Unit = { dropped ->
+        stepsGoal = dropped.coerceAtLeast(500)
+        sendStatus = "Dropped preset $dropped (not saved yet"
     }
 
     val onSendToWatch = {
@@ -73,10 +82,13 @@ fun PhoneCompanionApp(
             stepsGoal= stepsGoal,
             sendStatus= sendStatus,
             layoutLabel= layoutLabel,
+            cloudData= cloudData,
             onDecrease= onDecrease,
             onIncrease= onIncrease,
             onSendToWatch= onSendToWatch,
-            onSaveToFirebase= onSaveToFirebase
+            onSaveToFirebase= onSaveToFirebase,
+            extraEditorContent = { GoalPresetRow()},
+            onGoalDropped = onGoalDropped
        )
     } else {
         CompactDashboard(

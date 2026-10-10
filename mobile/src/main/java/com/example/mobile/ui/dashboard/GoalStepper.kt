@@ -20,10 +20,12 @@ fun GoalStepper(
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
     modifier: Modifier = Modifier,
-    largeNumber: Boolean = false
+    largeNumber: Boolean = false,
+    onGoalDropped: ((Int) -> Unit)?  = null
 ){
     Column(
-        modifier = Modifier, horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
         Text(
             text = "Wear Fitness",
@@ -47,18 +49,32 @@ fun GoalStepper(
             Button(onClick = onDecrease) {
                 Text("-")
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            val numberText = @Composable {
+                Text(
+                    text = stepsGoal.toString(),
+                    style = if (largeNumber) {
+                        MaterialTheme.typography.displaySmall
+                    } else {
+                        MaterialTheme.typography.headlineSmall
+                    }
+                )
+            }
 
-            Text(
-                text = stepsGoal.toString(),
-                style = if (largeNumber) {
-                    MaterialTheme.typography.displaySmall
-                } else {
-                    MaterialTheme.typography.headlineSmall
+            if (onGoalDropped != null) {
+                GoalDropTarget(onGoalDropped = onGoalDropped) {
+                    numberText()
                 }
-            )
+            }else {
+                numberText()
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+
+
+
+
+
+            Spacer(modifier = Modifier.width(16.dp))
 
             Button(onClick = onIncrease) {
                 Text("+")

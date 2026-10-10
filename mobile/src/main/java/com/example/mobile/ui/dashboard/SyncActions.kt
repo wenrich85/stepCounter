@@ -17,16 +17,17 @@ fun SyncActions(
     sendStatus: String,
     onSendToWatch: () -> Unit,
     onSaveToFirebase: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showStatus: Boolean = true
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
-
-    ){
-        Button(onClick = onSendToWatch,
-            modifier = Modifier.fillMaxWidth())
-        {
+    ) {
+        Button(
+            onClick = onSendToWatch,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Send to Watch")
         }
 
@@ -34,16 +35,17 @@ fun SyncActions(
 
         Button(
             onClick = onSaveToFirebase,
-            modifier = modifier.fillMaxWidth()
-        ){
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Save to Firebase")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Stats: $sendStatus",
-            style = MaterialTheme.typography.bodyLarge
-        )
+        if (showStatus) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Status: $sendStatus",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
